@@ -1,0 +1,23 @@
+[project]
+name = "poder-judicial-mcp"
+version = "0.1.0"
+description = "MCP server for searching and retrieving Spanish court judgments from poderjudicial.es"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.12"
+dependencies = [
+    "beautifulsoup4>=4.13.4",
+    "mcp[cli]>=1.9.2",
+    "pdfminer-six>=20250506",
+    "requests>=2.32.3",
+]
+
+[project.scripts]
+poder-judicial-mcp = "server:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+only-include = ["server.py", "services"]
