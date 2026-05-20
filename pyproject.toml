@@ -7,7 +7,7 @@ license = { file = "LICENSE" }
 requires-python = ">=3.12"
 dependencies = [
     "beautifulsoup4>=4.13.4",
-    "mcp[cli]>=1.9.2",
+    "mcp[cli]>=add 1.9.2",
     "pdfminer-six>=20250506",
     "requests>=2.32.3",
 ]
