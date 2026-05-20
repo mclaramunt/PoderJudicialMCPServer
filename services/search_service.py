@@ -13,6 +13,14 @@ class SearchServiceError(Exception):
 
 class Database(str, Enum):
     TRIBUNAL_SUPREMO = "TS"
+    # The "AN" code is a legacy name from the CENDOJ portal (indexAN.jsp). It
+    # does NOT search only the Audiencia Nacional — it is the general CENDOJ
+    # index covering Tribunal Supremo, Audiencia Nacional, Tribunales Superiores
+    # de Justicia, Audiencias Provinciales, juzgados unipersonales y militares.
+    # Combine with `comunidades` and/or `tipo_organo_pub` to narrow the scope.
+    OTROS_TRIBUNALES = "AN"
+    # Backward-compatible alias for the previous (misleading) name. Resolves to
+    # the same enum member as OTROS_TRIBUNALES.
     AUDIENCIA_NACIONAL = "AN"
 
 
@@ -57,6 +65,62 @@ class SubtipoResolucion(str, Enum):
     ACUERDO = "ACUERDO"
 
 
+class TipoOrganoPub(str, Enum):
+    # Tribunal Supremo
+    TRIBUNAL_SUPREMO = "11|12|13|14|15|16"
+    TRIBUNAL_SUPREMO_CIVIL = "11"
+    TRIBUNAL_SUPREMO_PENAL = "12"
+    TRIBUNAL_SUPREMO_CONTENCIOSO = "13"
+    TRIBUNAL_SUPREMO_SOCIAL = "14"
+    TRIBUNAL_SUPREMO_MILITAR = "15"
+    TRIBUNAL_SUPREMO_ESPECIAL = "16"
+
+    # Audiencia Nacional
+    AUDIENCIA_NACIONAL = "22|2264|23|24|25|26|27|28|29"
+    AUDIENCIA_NACIONAL_PENAL = "22"
+    AUDIENCIA_NACIONAL_SALA_APELACION = "2264"
+    AUDIENCIA_NACIONAL_CONTENCIOSO = "23"
+    AUDIENCIA_NACIONAL_SOCIAL = "24"
+    AUDIENCIA_NACIONAL_JUZGADO_VIGILANCIA_PENITENCIARIA = "25"
+    AUDIENCIA_NACIONAL_JUZGADO_CENTRAL_MENORES = "26"
+    AUDIENCIA_NACIONAL_JUZGADOS_CENTRALES_INSTRUCCION = "27"
+    AUDIENCIA_NACIONAL_JUZGADOS_CENTRALES_PENAL = "28"
+    AUDIENCIA_NACIONAL_JUZGADOS_CENTRALES_CONTENCIOSO = "29"
+
+    # Tribunal Superior de Justicia
+    TRIBUNAL_SUPERIOR_JUSTICIA = "31|31201202|33|34"
+    TSJ_CIVIL_Y_PENAL = "31"
+    TSJ_SECCION_APELACION_PENAL = "31201202"
+    TSJ_CONTENCIOSO = "33"
+    TSJ_SOCIAL = "34"
+
+    # Audiencias
+    AUDIENCIA_PROVINCIAL = "37"
+    AUDIENCIA_PROVINCIAL_TRIBUNAL_JURADO = "38"
+    AUDIENCIA_TERRITORIAL = "36"
+
+    # Marca UE
+    TRIBUNAL_MARCA_UE = "1001"
+    JUZGADOS_MARCA_UE = "1002"
+
+    # Juzgados unipersonales
+    JUZGADO_PRIMERA_INSTANCIA = "42"
+    JUZGADO_INSTRUCCION = "43"
+    JUZGADO_PRIMERA_INSTANCIA_INSTRUCCION = "41"
+    JUZGADO_CONTENCIOSO_ADMINISTRATIVO = "45"
+    JUZGADO_MENORES = "53"
+    JUZGADO_MERCANTIL = "47"
+    JUZGADO_PENAL = "51"
+    JUZGADO_SOCIAL = "44"
+    JUZGADO_VIGILANCIA_PENITENCIARIA = "52"
+    JUZGADO_VIOLENCIA_MUJER = "48"
+
+    # Militar
+    TRIBUNAL_MILITAR_TERRITORIAL = "83"
+    TRIBUNAL_MILITAR_CENTRAL = "85"
+    CONSEJO_SUPREMO_JUSTICIA_MILITAR = "75"
+
+
 class SearchService:
     SEARCH_URL = "https://www.poderjudicial.es/search/search.action"
     RECORDS_PER_PAGE = 10
@@ -67,11 +131,11 @@ class SearchService:
         page: int = 1,
         start_date: datetime | None = None,
         end_date: datetime | None = None,
-        database: Database = Database.AUDIENCIA_NACIONAL,
+        database: Database = Database.OTROS_TRIBUNALES,
         jurisdicciones: list[Jurisdiccion] | None = None,
         comunidades: list[Comunidad] | None = None,
         subtipos_resolucion: list[SubtipoResolucion] | None = None,
-        tipo_organo_pub: list[str] | None = None,
+        tipo_organo_pub: list[TipoOrganoPub] | None = None,
     ):
         self.query = query
         self.page = page
@@ -108,11 +172,12 @@ class SearchService:
         return "|".join(v.value for v in values)
 
     @staticmethod
-    def _format_tipo_organo(values: list[str]) -> str:
-        # Site format: "|CODE|CODE|...|" — codes are opaque numeric identifiers
+    def _format_tipo_organo(values: list[TipoOrganoPub]) -> str:
+        # Site format: "|CODE|CODE|...|". Group members (e.g. TRIBUNAL_SUPREMO)
+        # carry an internal "|"-separated bundle of codes which expands inline.
         if not values:
             return ""
-        return "|" + "|".join(values) + "|"
+        return "|" + "|".join(v.value for v in values) + "|"
 
     def fetch_results(self):
         start = (self.page - 1) * SearchService.RECORDS_PER_PAGE + 1

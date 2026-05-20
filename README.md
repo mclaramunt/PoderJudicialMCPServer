@@ -26,11 +26,58 @@ Search court judgments. Returns a paginated list with titles, metadata, summarie
 | `query` | `str \| None` | Free-text search (`TEXT` field). |
 | `page` | `int` | 1-indexed page; 10 results per page. |
 | `start_date` / `end_date` | `datetime \| None` | Resolution-date bounds. |
-| `database` | `Database` | `TS` (Tribunal Supremo) or `AN` (Audiencia Nacional, default). |
+| `database` | `Database` | `TS` (only Tribunal Supremo) or `AN` (default; **general CENDOJ index** — despite the legacy code, it covers TS, AN, TSJ, AP, juzgados unipersonales y militares). Use `comunidades` / `tipo_organo_pub` to narrow scope. |
 | `jurisdicciones` | `list[Jurisdiccion]` | `CIVIL`, `PENAL`, `CONTENCIOSO`, `SOCIAL`, `MILITAR`, `ESPECIAL`. |
 | `comunidades` | `list[Comunidad]` | Autonomous communities (`MADRID`, `CATALUÑA`, `ANDALUCÍA`, …). |
 | `subtipos_resolucion` | `list[SubtipoResolucion]` | `SENTENCIA CASACION`, `AUTO ADMISION`, `AUTO INADMISION`, `AUTO OTROS`, `AUTO ACLARATORIO`, `SENTENCIA OTRAS`, `ACUERDO`. |
-| `tipo_organo_pub` | `list[str]` | Opaque numeric organ-type codes (e.g. `["11", "12", "2264"]`). |
+| `tipo_organo_pub` | `list[TipoOrganoPub]` | Organ-type filter — readable enum (see table below) mapped to the site's numeric codes. |
+
+#### `TipoOrganoPub`
+
+Organ-type enum. Pick specific chambers (e.g. `TRIBUNAL_SUPREMO_PENAL`) or umbrella groups that expand to every sala of that órgano (e.g. `TRIBUNAL_SUPREMO`, `AUDIENCIA_NACIONAL`, `TRIBUNAL_SUPERIOR_JUSTICIA`).
+
+| Enum member | API code | Órgano |
+|---|---|---|
+| `TRIBUNAL_SUPREMO` | `11\|12\|13\|14\|15\|16` | Tribunal Supremo (todas las salas) |
+| `TRIBUNAL_SUPREMO_CIVIL` | `11` | TS · Sala de lo Civil |
+| `TRIBUNAL_SUPREMO_PENAL` | `12` | TS · Sala de lo Penal |
+| `TRIBUNAL_SUPREMO_CONTENCIOSO` | `13` | TS · Sala de lo Contencioso |
+| `TRIBUNAL_SUPREMO_SOCIAL` | `14` | TS · Sala de lo Social |
+| `TRIBUNAL_SUPREMO_MILITAR` | `15` | TS · Sala de lo Militar |
+| `TRIBUNAL_SUPREMO_ESPECIAL` | `16` | TS · Sala de lo Especial |
+| `AUDIENCIA_NACIONAL` | `22\|2264\|23\|24\|25\|26\|27\|28\|29` | Audiencia Nacional (todas las salas y juzgados) |
+| `AUDIENCIA_NACIONAL_PENAL` | `22` | AN · Sala de lo Penal |
+| `AUDIENCIA_NACIONAL_SALA_APELACION` | `2264` | Sala de Apelación de la AN |
+| `AUDIENCIA_NACIONAL_CONTENCIOSO` | `23` | AN · Sala de lo Contencioso |
+| `AUDIENCIA_NACIONAL_SOCIAL` | `24` | AN · Sala de lo Social |
+| `AUDIENCIA_NACIONAL_JUZGADO_VIGILANCIA_PENITENCIARIA` | `25` | AN · Juzgado Central de Vigilancia Penitenciaria |
+| `AUDIENCIA_NACIONAL_JUZGADO_CENTRAL_MENORES` | `26` | AN · Juzgado Central de Menores |
+| `AUDIENCIA_NACIONAL_JUZGADOS_CENTRALES_INSTRUCCION` | `27` | AN · Juzgados Centrales de Instrucción |
+| `AUDIENCIA_NACIONAL_JUZGADOS_CENTRALES_PENAL` | `28` | AN · Juzgados Centrales de lo Penal |
+| `AUDIENCIA_NACIONAL_JUZGADOS_CENTRALES_CONTENCIOSO` | `29` | AN · Juzgados Centrales de lo Contencioso |
+| `TRIBUNAL_SUPERIOR_JUSTICIA` | `31\|31201202\|33\|34` | TSJ (todas las salas) |
+| `TSJ_CIVIL_Y_PENAL` | `31` | TSJ · Sala de lo Civil y Penal |
+| `TSJ_SECCION_APELACION_PENAL` | `31201202` | Sección de Apelación Penal del TSJ |
+| `TSJ_CONTENCIOSO` | `33` | TSJ · Sala de lo Contencioso |
+| `TSJ_SOCIAL` | `34` | TSJ · Sala de lo Social |
+| `AUDIENCIA_PROVINCIAL` | `37` | Audiencia Provincial |
+| `AUDIENCIA_PROVINCIAL_TRIBUNAL_JURADO` | `38` | AP · Tribunal del Jurado |
+| `AUDIENCIA_TERRITORIAL` | `36` | Audiencia Territorial |
+| `TRIBUNAL_MARCA_UE` | `1001` | Tribunal de Marca de la UE |
+| `JUZGADOS_MARCA_UE` | `1002` | Juzgados de Marca de la UE |
+| `JUZGADO_PRIMERA_INSTANCIA` | `42` | Juzgado de Primera Instancia |
+| `JUZGADO_INSTRUCCION` | `43` | Juzgado de Instrucción |
+| `JUZGADO_PRIMERA_INSTANCIA_INSTRUCCION` | `41` | Juzgado de 1.ª Inst. e Instrucción |
+| `JUZGADO_CONTENCIOSO_ADMINISTRATIVO` | `45` | Juzgado de lo Contencioso-Administrativo |
+| `JUZGADO_MENORES` | `53` | Juzgado de Menores |
+| `JUZGADO_MERCANTIL` | `47` | Juzgado de lo Mercantil |
+| `JUZGADO_PENAL` | `51` | Juzgado de lo Penal |
+| `JUZGADO_SOCIAL` | `44` | Juzgado de lo Social |
+| `JUZGADO_VIGILANCIA_PENITENCIARIA` | `52` | Juzgado de Vigilancia Penitenciaria |
+| `JUZGADO_VIOLENCIA_MUJER` | `48` | Juzgado de Violencia sobre la Mujer |
+| `TRIBUNAL_MILITAR_TERRITORIAL` | `83` | Tribunal Militar Territorial |
+| `TRIBUNAL_MILITAR_CENTRAL` | `85` | Tribunal Militar Central |
+| `CONSEJO_SUPREMO_JUSTICIA_MILITAR` | `75` | Consejo Supremo de Justicia Militar |
 
 ### `retrieve_judgment_text(reference_id)`
 
@@ -85,7 +132,7 @@ poder-judicial-mcp
 Project layout:
 
 - `server.py` — FastMCP server, tool and resource definitions, `main()` entry point.
-- `services/` — HTTP/scraping logic and typed enums (`Database`, `Jurisdiccion`, `Comunidad`, `SubtipoResolucion`) for the poderjudicial.es search endpoint.
+- `services/` — HTTP/scraping logic and typed enums (`Database`, `Jurisdiccion`, `Comunidad`, `SubtipoResolucion`, `TipoOrganoPub`) for the poderjudicial.es search endpoint.
 
 ## License
 

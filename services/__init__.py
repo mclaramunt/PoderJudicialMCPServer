@@ -5,6 +5,7 @@ from .search_service import (
     SearchService,
     SearchServiceError,
     SubtipoResolucion,
+    TipoOrganoPub,
 )
 
 __all__ = [
@@ -14,4 +15,5 @@ __all__ = [
     "SearchService",
     "SearchServiceError",
     "SubtipoResolucion",
+    "TipoOrganoPub",
 ]

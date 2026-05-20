@@ -12,6 +12,7 @@ from services import (
     SearchService,
     SearchServiceError,
     SubtipoResolucion,
+    TipoOrganoPub,
 )
 
 
@@ -25,11 +26,11 @@ def search(
     page: int = 1,
     start_date: datetime | None = None,
     end_date: datetime | None = None,
-    database: Database = Database.AUDIENCIA_NACIONAL,
+    database: Database = Database.OTROS_TRIBUNALES,
     jurisdicciones: list[Jurisdiccion] | None = None,
     comunidades: list[Comunidad] | None = None,
     subtipos_resolucion: list[SubtipoResolucion] | None = None,
-    tipo_organo_pub: list[str] | None = None,
+    tipo_organo_pub: list[TipoOrganoPub] | None = None,
 ):
     """Search for Spanish court judgments on poderjudicial.es.
 
@@ -38,11 +39,23 @@ def search(
         page: 1-indexed page number; each page returns up to 10 results.
         start_date: Lower bound for resolution date (FECHARESOLUCIONDESDE).
         end_date: Upper bound for resolution date (FECHARESOLUCIONHASTA).
-        database: Which database to search — Tribunal Supremo (TS) or Audiencia Nacional (AN).
+        database: Which CENDOJ index to search.
+            - `TS`: only Tribunal Supremo resolutions.
+            - `AN` (default): general CENDOJ index. Despite the legacy "AN"
+              code (from `indexAN.jsp`), this is NOT limited to the Audiencia
+              Nacional — it covers Tribunal Supremo, Audiencia Nacional,
+              Tribunales Superiores de Justicia (TSJ), Audiencias Provinciales
+              (AP), juzgados unipersonales y tribunales militares. Use the
+              `comunidades` and `tipo_organo_pub` filters to narrow the scope
+              (e.g. comunidades=["CATALUÑA"] + tipo_organo_pub=[TSJ_CIVIL_Y_PENAL,
+              TSJ_CONTENCIOSO, TSJ_SOCIAL] to target TSJ Cataluña).
         jurisdicciones: Filter by jurisdiction (CIVIL, PENAL, CONTENCIOSO, SOCIAL, MILITAR, ESPECIAL).
         comunidades: Filter by autonomous community (e.g. MADRID, CATALUÑA, ANDALUCÍA).
         subtipos_resolucion: Filter by resolution subtype (e.g. SENTENCIA CASACION, AUTO ADMISION).
-        tipo_organo_pub: Filter by organ-type codes (opaque numeric ids used by the site, e.g. ["11", "12"]).
+        tipo_organo_pub: Filter by organ type (`TipoOrganoPub`). Use specific
+            chambers (e.g. `TRIBUNAL_SUPREMO_PENAL`) or umbrella groups that
+            expand to every sala (e.g. `TRIBUNAL_SUPREMO`, `AUDIENCIA_NACIONAL`,
+            `TRIBUNAL_SUPERIOR_JUSTICIA`).
     """
     try:
         search_service = SearchService(
