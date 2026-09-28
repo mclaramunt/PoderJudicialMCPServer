@@ -1,6 +1,21 @@
 # Poder Judicial MCP Server
 
+[![Tests](https://github.com/mclaramunt/PoderJudicialMCPServer/actions/workflows/test.yml/badge.svg)](https://github.com/mclaramunt/PoderJudicialMCPServer/actions/workflows/test.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+
 An MCP (Model Context Protocol) server that exposes search and retrieval of Spanish court judgments from [poderjudicial.es](https://www.poderjudicial.es).
+
+**ES —** Servidor MCP para buscar **jurisprudencia española** del **CENDOJ** (poderjudicial.es) desde asistentes de IA como **Claude**, Cursor o VS Code: sentencias y autos del Tribunal Supremo, Audiencia Nacional, TSJ, Audiencias Provinciales y juzgados, con filtros por fecha, jurisdicción, comunidad autónoma y órgano, y lectura del texto completo de cada resolución.
+
+### Example questions / Ejemplos de preguntas
+
+Once the server is connected, ask your assistant things like:
+
+- *"Busca sentencias de casación del Tribunal Supremo, Sala de lo Social, sobre despido improcedente en 2024 y resúmelas."*
+- *"¿Qué ha dicho el TSJ de Cataluña sobre la cláusula suelo en los últimos dos años?"*
+- *"Find Audiencia Provincial de Madrid rulings on tenant eviction from 2023 and read the most recent one."*
+- *"Lee la sentencia con este reference_id y explícame el fallo."*
 
 > ⚠️ **Aviso legal — léelo antes de usar este software**
 >
@@ -109,6 +124,12 @@ No clone required. Add this to your MCP client configuration:
 
 `pipx` will fetch the repo, build the package in an isolated environment, and launch the server.
 
+In **Claude Code**, one command does the same:
+
+```bash
+claude mcp add poder-judicial -- pipx run --spec git+https://github.com/mclaramunt/PoderJudicialMCPServer.git poder-judicial-mcp
+```
+
 Requirements on the host: Python ≥ 3.12 and [`pipx`](https://pipx.pypa.io/) installed.
 
 ## Run from a local checkout
@@ -133,6 +154,17 @@ Project layout:
 
 - `server.py` — FastMCP server, tool and resource definitions, `main()` entry point.
 - `services/` — HTTP/scraping logic and typed enums (`Database`, `Jurisdiccion`, `Comunidad`, `SubtipoResolucion`, `TipoOrganoPub`) for the poderjudicial.es search endpoint.
+- `tests/` — offline tests (`uv run pytest`); they never call poderjudicial.es.
+
+## Contributing / Contribuir
+
+Issues and pull requests are welcome in English or Spanish. / Se aceptan issues y pull requests en español o inglés.
+
+- Search results or PDFs stopped working? The site probably changed: open a ["poderjudicial.es changed"](https://github.com/mclaramunt/PoderJudicialMCPServer/issues/new?template=site_change.yml) issue.
+- Questions, example prompts or how you use it: [Discussions](https://github.com/mclaramunt/PoderJudicialMCPServer/discussions).
+- Code: see [CONTRIBUTING.md](CONTRIBUTING.md). Tests run offline with `uv run pytest`. Features for bulk downloading or storing judgments are out of scope because of the CGPJ legal notice above.
+
+If this is useful to you, a ⭐ helps other lawyers and developers find it.
 
 ## License
 

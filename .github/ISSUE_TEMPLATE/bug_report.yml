@@ -1,0 +1,37 @@
+name: Bug report / Error
+description: A tool returns an error, wrong results, or the server doesn't start.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! You can write in English or Spanish. / Puedes escribir en español o en inglés.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect? / ¿Qué pasó y qué esperabas?
+    validations:
+      required: true
+  - type: textarea
+    id: call
+    attributes:
+      label: Tool call / Llamada a la herramienta
+      description: The tool (`search`, `retrieve_judgment_text`) and the arguments used.
+      render: json
+      placeholder: |
+        {"query": "despido improcedente", "database": "TS", "jurisdicciones": ["SOCIAL"]}
+  - type: textarea
+    id: output
+    attributes:
+      label: Output or error / Resultado o error
+      render: text
+  - type: input
+    id: client
+    attributes:
+      label: MCP client / Cliente MCP
+      placeholder: Claude Desktop, Claude Code, Cursor, VS Code…
+  - type: input
+    id: env
+    attributes:
+      label: OS and Python version / Sistema operativo y versión de Python
+      placeholder: macOS 15, Python 3.12.4

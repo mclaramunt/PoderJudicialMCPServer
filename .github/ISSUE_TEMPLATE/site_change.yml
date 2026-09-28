@@ -1,0 +1,25 @@
+name: poderjudicial.es changed / La web ha cambiado
+description: Search results or PDFs stopped working because the website changed.
+labels: [site-change]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This server reads the public search pages of poderjudicial.es, so it breaks when the site changes. These reports are very useful.
+  - type: textarea
+    id: what
+    attributes:
+      label: What stopped working? / ¿Qué ha dejado de funcionar?
+      description: e.g. empty results, missing metadata, a filter that is ignored, PDF text not extracted.
+    validations:
+      required: true
+  - type: textarea
+    id: call
+    attributes:
+      label: Tool call / Llamada a la herramienta
+      render: json
+  - type: input
+    id: since
+    attributes:
+      label: Since when? / ¿Desde cuándo?
+      placeholder: "2026-09-01"

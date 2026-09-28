@@ -1,0 +1,21 @@
+name: Feature request / Propuesta
+description: Suggest a new filter, tool or improvement.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Out of scope:** bulk download, scraping or storing judgments, or building datasets. The [CGPJ legal notice](https://www.poderjudicial.es/cgpj/es/Poder-Judicial/Tribunal-Supremo/Aviso-legal/) forbids them. See CONTRIBUTING.md.
+
+        **Fuera de alcance:** descargas masivas, almacenar sentencias o crear bases de datos. El aviso legal del CGPJ lo prohíbe.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What do you want to do? / ¿Qué quieres hacer?
+      description: Describe the legal research task, e.g. "find TSJ Madrid social rulings about X in 2024".
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Proposed change / Cambio propuesto
