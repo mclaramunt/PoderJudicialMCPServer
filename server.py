@@ -88,7 +88,6 @@ def retrieve_judgment_text(
     )
     try:
         response = requests.get(url)
-        print(response)
         response.raise_for_status()
         with tempfile.NamedTemporaryFile(delete=True, suffix=".pdf") as tmp:
             tmp.write(response.content)
@@ -113,7 +112,6 @@ def get_judgment_text(reference_id: str):
     )
     try:
         response = requests.get(url)
-        print(response)
         response.raise_for_status()
         with tempfile.NamedTemporaryFile(delete=True, suffix=".pdf") as tmp:
             tmp.write(response.content)

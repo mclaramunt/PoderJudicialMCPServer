@@ -273,7 +273,7 @@ class SearchService:
                 value = li.find("b").get_text(strip=True) if li.find("b") else None
                 metadata[key] = value
 
-            summary = item.select_one("div.summary").get_text(strip=True).replace("RESUMEN:", "").replace("Resumen Automático:", "") if item.select_one("div.summary") else None
+            summary = item.select_one("div.summary").get_text(strip=True).replace("RESUMEN:", "").replace("Resumen Automático:", "").strip() if item.select_one("div.summary") else None
 
             results.append({
                 "title": title,

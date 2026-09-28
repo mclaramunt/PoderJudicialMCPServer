@@ -84,8 +84,7 @@ def test_parse_results():
     assert first["title"] == "STS 1234/2024"
     assert first["reference_id"] == "abc123def456"
     assert first["metadata"] == {"ROJ": "STS 1234/2024", "Fecha": "15/01/2024"}
-    # The prefix is removed but the space after it is kept.
-    assert first["summary"] == " Recurso de casación estimado."
+    assert first["summary"] == "Recurso de casación estimado."
 
     second = results[1]
     assert second["reference_id"] == "zzz999"
@@ -140,3 +139,13 @@ def test_fetch_results_builds_payload(monkeypatch):
     assert sent["TIPOORGANOPUB"] == "|14|"
     assert "VALUESCOMUNIDAD" not in sent
     assert "SUBTIPORESOLUCION" not in sent
+
+
+def test_parse_results_strips_automatic_summary_prefix():
+    html = """
+    <div class="row searchresult doc">
+      <div class="title"><a href="/search/AN/openDocument/r1/x">T</a></div>
+      <div class="summary">Resumen Automático: Texto del resumen.</div>
+    </div>
+    """
+    assert SearchService.parse_results(html)[0]["summary"] == "Texto del resumen."
