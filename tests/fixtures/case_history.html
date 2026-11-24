@@ -1,0 +1,107 @@
+<!DOCTYPE div PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<div class="lineajur" xmlns:autn="http://schemas.autonomy.com/aci/">
+<div class="linea container" id="results_lineajurV2_28079110012026101667">
+<div class="lineajurV2Container"></div>
+</div>
+</div><script id="results_lineajson_28079110012026101667">
+			var results_lineajurV2_28079110012026101667 = {
+				data: [
+				
+					{	
+						type: 'nodos',
+						id: '-713822497841788327',
+						attributes: {
+							idCms: -713822497841788327, texto: 'SJPI, Santander, núm. 8, 06-06-2022', 
+							nonavigate: false,
+							
+							cabeRecurso: false,
+							aristas: [
+											
+							
+								{ 
+									nodo: 10645374,
+									tipoRelacion: 'recurrida_por', 
+									origen: -713822497841788327, 
+									destino: 10645374
+								}
+							]
+						}
+					},
+					{	
+						type: 'nodos',
+						id: '10645374',
+						attributes: {
+							idCms: 10645374, idCendoj: '39075370042023100455', roj: 'SAP  S 1105/2023', organo: 'AP', tipo: 'Sentencia', fecha: 1689544800000, fallo: 'Estima', cuestion: '', 
+							nonavigate: false,
+							
+							cabeRecurso: false,
+							aristas: [
+											
+							
+								{ 
+									nodo: -713822497841788327,
+									tipoRelacion: 'recurrida_por', 
+									origen: -713822497841788327, 
+									destino: 10645374
+								},
+								{ 
+									nodo: 11387003,
+									tipoRelacion: 'admitida_grafo_por', 
+									origen: 10645374, 
+									destino: 11387003
+								},
+								{ 
+									nodo: 11931977,
+									tipoRelacion: 'recurrida_grafo_por', 
+									origen: 10645374, 
+									destino: 11931977
+								}
+							]
+						}
+					},
+					{	
+						type: 'nodos',
+						id: '11387003',
+						attributes: {
+							idCms: 11387003, idCendoj: '28079110012025201823', roj: 'ATS 6888/2025', organo: 'TSSCI', tipo: 'Auto', fecha: 1752616800000, 
+							nonavigate: false,
+							
+							cabeRecurso: false,
+							aristas: [
+											
+							
+								{ 
+									nodo: 10645374,
+									tipoRelacion: 'admitida_grafo_por', 
+									origen: 10645374, 
+									destino: 11387003
+								}
+							]
+						}
+					},
+					{	
+						type: 'nodos',
+						id: '11931977',
+						attributes: {
+							idCms: 11931977, idCendoj: '28079110012026101667', roj: 'STS 4483/2026', organo: 'TSSCI', tipo: 'Sentencia', fecha: 1793228400000, 
+							nonavigate: false,
+							
+							cabeRecurso: false,
+							aristas: [
+											
+							
+								{ 
+									nodo: 10645374,
+									tipoRelacion: 'recurrida_grafo_por', 
+									origen: 10645374, 
+									destino: 11931977
+								}
+							]
+						}
+					}
+				]
+			};
+			
+			loadLine($("#results_lineajurV2_28079110012026101667"), false, results_lineajurV2_28079110012026101667, '11931977');
+
+		</script>

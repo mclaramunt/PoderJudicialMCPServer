@@ -149,3 +149,90 @@ def test_parse_results_strips_automatic_summary_prefix():
     </div>
     """
     assert SearchService.parse_results(html)[0]["summary"] == "Texto del resumen."
+
+
+# ---------------------------------------------------------------- sort and case id
+
+from pathlib import Path
+
+from services import CaseHistoryService, SearchServiceError, SortOrder, parse_case_history
+
+RESULT_WITH_CASE = """
+<div class="row searchresult doc">
+  <div class="title"><a href="/search/AN/openDocument/abc123def456/20240101">STS 1/2024</a></div>
+  <a href="#" onclick="showLineaJur('11931977','20261119'); return false;">caso</a>
+</div>
+"""
+
+
+def test_parse_results_extracts_case_id():
+    results = SearchService.parse_results(RESULT_WITH_CASE + RESULTS_HTML)
+    assert results[0]["case_id"] == "11931977"
+    assert results[1]["case_id"] is None
+
+
+def test_sort_is_sent_and_defaults_to_newest(monkeypatch):
+    sent = []
+
+    class FakeResponse:
+        text = ""
+
+        def raise_for_status(self):
+            pass
+
+    monkeypatch.setattr(SearchService, "get_cookies", staticmethod(lambda: {}))
+    monkeypatch.setattr(
+        search_service.requests,
+        "post",
+        lambda url, data, cookies, headers: sent.append(data) or FakeResponse(),
+    )
+    SearchService(query="x").fetch_results()
+    SearchService(query="x", sort=SortOrder.RELEVANCIA).fetch_results()
+    SearchService(query="x", sort="Relevance").fetch_results()
+    assert [d["sort"] for d in sent] == [
+        "IN_FECHARESOLUCION:decreasing",
+        "Relevance",
+        "Relevance",
+    ]
+
+
+# ---------------------------------------------------------------- case history
+
+CASE_HISTORY = (Path(__file__).parent / "fixtures" / "case_history.html").read_text()
+
+
+def test_parse_case_history():
+    history = parse_case_history(CASE_HISTORY)
+    rojs = [r.get("roj") for r in history["resolutions"]]
+    assert rojs == [None, "SAP S 1105/2023", "ATS 6888/2025", "STS 4483/2026"]
+    first = history["resolutions"][0]
+    assert first == {"descripcion": "SJPI, Santander, núm. 8, 06-06-2022"}
+    ap = history["resolutions"][1]
+    assert ap["fecha"] == "2023-07-17"  # epoch ms are midnight Europe/Madrid
+    assert ap["fallo"] == "Estima"
+    assert ap["id_cendoj"] == "39075370042023100455"
+    assert {
+        "resolucion": "SAP S 1105/2023",
+        "relacion": "recurrida por",
+        "por": "STS 4483/2026",
+    } in history["relations"]
+    # Each edge is listed on both of its nodes upstream; keep it once.
+    assert len(history["relations"]) == len(
+        {tuple(r.values()) for r in history["relations"]}
+    )
+
+
+def test_case_history_rejects_bad_ids():
+    with pytest.raises(SearchServiceError):
+        CaseHistoryService("../etc")
+
+
+def test_accepts_plain_values():
+    service = SearchService(
+        database="TS",
+        jurisdicciones=["CIVIL"],
+        comunidades=["MADRID"],
+        tipo_organo_pub=["TRIBUNAL_SUPREMO_CIVIL"],
+    )
+    assert service.database is Database.TRIBUNAL_SUPREMO
+    assert service._format_tipo_organo(service.tipo_organo_pub) == "|11|"
