@@ -16,6 +16,8 @@ Once the server is connected, ask your assistant things like:
 - *"¿Qué ha dicho el TSJ de Cataluña sobre la cláusula suelo en los últimos dos años?"*
 - *"Find Audiencia Provincial de Madrid rulings on tenant eviction from 2023 and read the most recent one."*
 - *"Lee la sentencia con este reference_id y explícame el fallo."*
+- *"Busca las sentencias más relevantes del Supremo sobre riesgo de confusión entre marcas."*
+- *"¿Esta sentencia de la Audiencia fue recurrida? ¿Qué decidió el Supremo?"*
 
 > ⚠️ **Aviso legal — léelo antes de usar este software**
 >
@@ -34,7 +36,7 @@ Once the server is connected, ask your assistant things like:
 
 ### `search(...)`
 
-Search court judgments. Returns a paginated list with titles, metadata, summaries and a `reference_id` for each result.
+Search court judgments. Returns a paginated list with titles, metadata, summaries, a `reference_id` for each result and, when the resolution belongs to a case with several instances, a `case_id` for `get_case_history`.
 
 | Parameter | Type | Description |
 |---|---|---|
@@ -46,6 +48,7 @@ Search court judgments. Returns a paginated list with titles, metadata, summarie
 | `comunidades` | `list[Comunidad]` | Autonomous communities (`MADRID`, `CATALUÑA`, `ANDALUCÍA`, …). |
 | `subtipos_resolucion` | `list[SubtipoResolucion]` | `SENTENCIA CASACION`, `AUTO ADMISION`, `AUTO INADMISION`, `AUTO OTROS`, `AUTO ACLARATORIO`, `SENTENCIA OTRAS`, `ACUERDO`. |
 | `tipo_organo_pub` | `list[TipoOrganoPub]` | Organ-type filter — readable enum (see table below) mapped to the site's numeric codes. |
+| `sort` | `SortOrder` | `IN_FECHARESOLUCION:decreasing` (default, newest first), `Relevance` (best match first — "Coincidencia" on the site; use it to find the leading rulings on a topic), `IN_FECHARESOLUCION:increasing`, or `IN_FECHAENTRADA:numberdecreasing` (latest added to CENDOJ). |
 
 #### `TipoOrganoPub`
 
@@ -94,9 +97,13 @@ Organ-type enum. Pick specific chambers (e.g. `TRIBUNAL_SUPREMO_PENAL`) or umbre
 | `TRIBUNAL_MILITAR_CENTRAL` | `85` | Tribunal Militar Central |
 | `CONSEJO_SUPREMO_JUSTICIA_MILITAR` | `75` | Consejo Supremo de Justicia Militar |
 
-### `retrieve_judgment_text(reference_id)`
+### `retrieve_judgment_text(reference_id=None, id_cendoj=None)`
 
-Download the judgment PDF for a given `reference_id` and return its extracted text.
+Download the judgment PDF and return its extracted text. Pass the `reference_id` of a `search` result, or the `id_cendoj` of a resolution from `get_case_history`. Returns `"No text available for this resolution in CENDOJ"` when the site serves an empty document.
+
+### `get_case_history(case_id)`
+
+Procedural history of a case ("Ver resoluciones del Caso" on the site): every resolution of the same case across instances (juzgado, Audiencia Provincial, TSJ, Tribunal Supremo…), with ROJ, court, date and outcome, and the relations between them (`recurrida por`, `recurso admitido por`, `aclarada por`). Use it to check whether a judgment was appealed, confirmed or reversed. It is **not** a citation graph: CENDOJ does not expose which rulings cite which, nor any "most cited" ordering.
 
 ## Resources
 
@@ -153,7 +160,7 @@ poder-judicial-mcp
 Project layout:
 
 - `server.py` — FastMCP server, tool and resource definitions, `main()` entry point.
-- `services/` — HTTP/scraping logic and typed enums (`Database`, `Jurisdiccion`, `Comunidad`, `SubtipoResolucion`, `TipoOrganoPub`) for the poderjudicial.es search endpoint.
+- `services/` — HTTP/scraping logic and typed enums (`Database`, `Jurisdiccion`, `Comunidad`, `SubtipoResolucion`, `TipoOrganoPub`, `SortOrder`) for the poderjudicial.es search endpoint, and `CaseHistoryService` for the case history.
 - `tests/` — offline tests (`uv run pytest`); they never call poderjudicial.es.
 
 ## Contributing / Contribuir

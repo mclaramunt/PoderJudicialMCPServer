@@ -24,6 +24,17 @@ class Database(str, Enum):
     AUDIENCIA_NACIONAL = "AN"
 
 
+class SortOrder(str, Enum):
+    """Result order offered by the CENDOJ results page."""
+
+    # "Coincidencia": best match for the query first.
+    RELEVANCIA = "Relevance"
+    FECHA_DESC = "IN_FECHARESOLUCION:decreasing"
+    FECHA_ASC = "IN_FECHARESOLUCION:increasing"
+    # Most recently added to CENDOJ (entry date, not resolution date).
+    RECIEN_PUBLICADAS = "IN_FECHAENTRADA:numberdecreasing"
+
+
 class Jurisdiccion(str, Enum):
     CIVIL = "CIVIL"
     PENAL = "PENAL"
@@ -183,16 +194,19 @@ class SearchService:
         comunidades: list[Comunidad] | None = None,
         subtipos_resolucion: list[SubtipoResolucion] | None = None,
         tipo_organo_pub: list[TipoOrganoPub] | None = None,
+        sort: SortOrder = SortOrder.FECHA_DESC,
     ):
         self.query = query
+        self.sort = SortOrder(sort)
         self.page = page
         self.start_date = start_date
         self.end_date = end_date
-        self.database = database
-        self.jurisdicciones = jurisdicciones or []
-        self.comunidades = comunidades or []
-        self.subtipos_resolucion = subtipos_resolucion or []
-        self.tipo_organo_pub = tipo_organo_pub or []
+        # Accept enum members or their plain values (MCP clients send values).
+        self.database = Database(database)
+        self.jurisdicciones = [Jurisdiccion(v) for v in jurisdicciones or []]
+        self.comunidades = [Comunidad(v) for v in comunidades or []]
+        self.subtipos_resolucion = [SubtipoResolucion(v) for v in subtipos_resolucion or []]
+        self.tipo_organo_pub = [TipoOrganoPub(v) for v in tipo_organo_pub or []]
 
     @staticmethod
     def get_cookies():
@@ -230,7 +244,7 @@ class SearchService:
         start = (self.page - 1) * SearchService.RECORDS_PER_PAGE + 1
         payload = {
             "action": "query",
-            "sort": "IN_FECHARESOLUCION:decreasing",
+            "sort": self.sort.value,
             "recordsPerPage": str(SearchService.RECORDS_PER_PAGE),
             "databasematch": self.database.value,
             "start": str(start),
@@ -273,6 +287,11 @@ class SearchService:
                 value = li.find("b").get_text(strip=True) if li.find("b") else None
                 metadata[key] = value
 
+            # Internal CENDOJ id of the case history ("Ver resoluciones del
+            # Caso"), only present when the resolution belongs to one.
+            case_match = re.search(r"showLineaJur\('(\d+)'", str(item))
+            case_id = case_match.group(1) if case_match else None
+
             summary = item.select_one("div.summary").get_text(strip=True).replace("RESUMEN:", "").replace("Resumen Automático:", "").strip() if item.select_one("div.summary") else None
 
             results.append({
@@ -280,7 +299,8 @@ class SearchService:
                 "link": link,
                 "metadata": metadata,
                 "summary": summary,
-                "reference_id": reference_id
+                "reference_id": reference_id,
+                "case_id": case_id,
             })
 
         return results
